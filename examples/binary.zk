@@ -1,0 +1,11 @@
+nA = 1
+nB = 3
+nf = 3
+rep = 3        # This is a comment
+
+Verification equations:
+  f1*g + f2*h - a1*x - b1
+  f1*(x-f1)*g + f3*h - b2*x - b3
+
+Polynomial:
+  ag1*(1-ag1)

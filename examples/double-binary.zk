@@ -1,0 +1,12 @@
+nA = 2
+nB = 4
+nf = 3
+rep = 6
+
+Verification equations:
+  f1*g + f2*h - a1/x - b1 - x*a2
+  f1*(x+1/x-f1)*g + f3*h - b2/x - b3 - b4*x
+
+Polynomials:
+  ag1*(1-ag1)
+  ag2*(1-ag2)
