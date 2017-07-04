@@ -1,0 +1,13 @@
+nA = 3
+nB = 3
+nf = 5
+rep = 2
+
+Verification equations:
+  f1*g + f2*h - a1*x - b1
+  f3*g + f4*h - a2*x - b2
+  f1*a2 + f5*h - a3*x - b3
+
+Polynomials:
+  ag3 - ag1*ag2
+  ag3 - ag1

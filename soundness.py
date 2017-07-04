@@ -1,6 +1,7 @@
 #!/usr/bin/env sage
 
 import sys
+from time import time
 from sage.all import *
 
 def varlist(name,n):
@@ -107,6 +108,8 @@ def analyze(fname):
     new_A = transpose(transpose(S)[:-1])
     new_b = vector(transpose(S)[-1])
 
+#    print new_A
+
     vdic = {}
     for k in range(len(variables)):
         vdic[str(variables[k])] = new_b[k]
@@ -122,8 +125,7 @@ def analyze(fname):
             t = new_b[i]
             ideal_terms.append(t)
 
-    I = ideal(ideal_terms[0])
-    B = I.groebner_basis()
+#    print ideal_terms
 
     for v in variables:
         aux_polys = []
@@ -132,10 +134,17 @@ def analyze(fname):
             aux_polys.append(P)
         polys = aux_polys
 
+    I = (ideal_terms)*R
+    B = I.groebner_basis()
+
     for P in polys:
-        print P.reduce(B) == 0
+        if P == 0 or P.reduce(B) == 0:  print True
+        else:  print False
 
 
 if __name__ == '__main__':
     if len(sys.argv) >= 2:
+        t1 = time()
         analyze(sys.argv[1])
+        t2 = time()
+        print "Total time:", round(1000*(t2-t1))/1000.0, "seconds"
