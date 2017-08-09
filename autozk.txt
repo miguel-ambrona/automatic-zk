@@ -1,0 +1,126 @@
+#Brute-force search parameters
+
+D = 2 #partial degree of variables appearing in verification equations
+Nv = 3 #number of verification equations
+Na = 3 #number of group elements in statement
+Nb = 4 #number of group elements in first message
+Nf = 5 #number of field elements in response
+Ns = 3 #number of times we need to see the response to extract a witness
+
+#================================================================================
+
+def listsum(list):
+    z = list[0]
+    if len(list) == 1:
+        return list[0]
+    for i in range(1,len(list)):
+        z = z + list[i]
+    return z
+
+#================================================================================
+
+#Setup
+
+#q = 12289
+q = 107033
+varlist  = ['a%d'%i for i in range(Na)]
+varlist += ['alpha%d'%i for i in range(Na)]
+varlist += ['b%d'%i for i in range(Nb)]
+varlist += ['beta%d'%i for i in range(Nb)]
+
+for i in range(Nf):
+    #Watch out for string formatting issues in this line when Ns gets bigger than 1 digit
+    varlist += ['f%dr%d'%(i,j) for j in range(Ns)]
+
+S = PolynomialRing(GF(q),varlist)
+S.inject_variables()
+s = S.gens()
+
+a = list(s[0:Na])
+alpha = list(s[Na:2*Na])
+b = list(s[2*Na:2*Na+Nb])
+beta = list(s[2*Na+Nb:2*Na+2*Nb])
+
+'''
+r is the number of copies of the 3 message needed to extract a witness,
+so f1r2 is 1st value, in the 2nd copy of the response
+
+fr[1][2] = f1r2
+'''
+
+fr = [list(s[2*Na+2*Nb+j*Ns:2*Na+2*Nb+(j+1)*Ns]) for j in range(Nf)]
+
+#================================================================================
+
+#Random challenge values
+
+randomchallenges = 0
+
+if randomchallenges == 1:
+    #Chooses Ns random values
+    x = [GF(q)(randint(0,q-1)) for j in range(Ns)]
+
+elif randomchallenges == 0:
+    #Uses consecutive integers from 0 to Ns-1
+    x = range(Ns)
+
+#================================================================================
+
+#From verification equations
+
+experiment = 0
+corlist = []
+
+if experiment == 0:
+#Multiplication of Committed Values
+
+    for j in range(Ns):
+
+        corlist += [fr[0][j] - a[0]*x[j] - b[0] ]
+        corlist += [fr[1][j] - alpha[0]*x[j] - beta[0] ]
+        corlist += [fr[2][j] - a[1]*x[j] - b[1] ]
+        corlist += [fr[3][j] - alpha[1]*x[j] - beta[1] ]
+        corlist += [fr[0][j]*fr[2][j] - a[2]*x[j]*x[j] - b[2]*x[j] - b[3] ]
+        corlist += [fr[4][j] - alpha[2]*x[j]*x[j] - beta[2]*x[j] - beta[3] ]
+
+elif experiment == 1:
+#Committed Value is a Bit
+
+    for j in range(Ns):
+        
+        corlist += [fr[0][j] - a[0]*x[j] - b[0] ]
+        corlist += [fr[1][j] - alpha[0]*x[j] - beta[0] ]
+        corlist += [fr[2][j] - alpha[1]*x[j] - beta[1] ]
+        corlist += [fr[0][j]*(x[j]-fr[0][j]) - b[1]*x[j] - b[2] ]
+
+I = S.ideal(corlist)
+I = I.radical()
+
+#================================================================================
+
+#Soundness
+
+if experiment == 0:
+    print a[0]*a[1]-a[2] in I
+elif experiment == 1:
+    print a[0]*(1-a[0]) in I
+
+#================================================================================
+
+#Completeness
+
+I.elimination_ideal(b + beta + listsum(fr) ).radical().gens()
+
+#================================================================================
+
+#Zero-Knowledge
+
+#Sufficient condition: no beta variables in this ideal
+
+I.elimination_ideal(a + alpha + listsum(fr) ).radical().gens()
+
+#================================================================================
+
+#Honest-Prover Program
+
+I.elimination_ideal(listsum(fr) ).radical().gens()
